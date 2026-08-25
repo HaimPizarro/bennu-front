@@ -1,0 +1,91 @@
+/* ===== Design Tokens =====
+   Breakpoints (mobile-first):
+   -- 640px  (40rem)  phones → small
+   -- 768px  (48rem)  tablets → medium
+   -- 1024px (64rem)  desktop → large
+   Keep every media query in each stylesheet aligned to these values.
+*/
+
+:root {
+  /* palette (light) — Técnico Etéreo */
+  --bg: #feffff;
+  --bg-mist: #eff5f9;
+  --steel: #5d7a8c;
+  --mist: #9cafbe;
+  --slate: #3e4349;
+
+  /* semantic colors */
+  --danger: #b4553f;
+  --danger-hover: #933d2b;
+  --danger-bg: #fbe9e5;
+  --danger-text: #933d2b;
+  --toast-error: #b4553f;
+  --text-on-steel: #ffffff;
+  --switch-knob: #ffffff;
+  --modal-overlay: rgba(23, 32, 38, 0.45);
+  --btn-hover: #3e4349;
+
+  /* type faces */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* responsive type scale (mobile base) */
+  --text-xs: 0.6875rem;
+  --text-sm: 0.75rem;
+  --text-base: 0.875rem;
+  --text-lg: 1rem;
+  --text-xl: 1.25rem;
+
+  /* layout */
+  --header-h: 4rem;
+  --radius: 10px;
+  --shadow: 0 8px 30px rgba(93, 122, 140, 0.14);
+  --shadow-strong: 0 8px 30px rgba(93, 122, 140, 0.25);
+  --shadow-panel: 0 12px 32px rgb(62 67 73 / 0.14);
+}
+
+/* ===== Dark mode ===== */
+[data-theme='dark'] {
+  --bg: #0c1622;
+  --bg-mist: #162231;
+  --steel: #6f90a9;
+  --mist: #5d7590;
+  --slate: #d8e0e9;
+
+  --danger: #e0705c;
+  --danger-hover: #c05544;
+  --danger-bg: #2a1a16;
+  --danger-text: #e08878;
+  --toast-error: #c05544;
+  --text-on-steel: #ffffff;
+  --switch-knob: #d8e0e9;
+  --modal-overlay: rgba(0, 0, 0, 0.6);
+  --btn-hover: #46616f;
+
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --shadow-strong: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-panel: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+/* ===== Responsive type scale (tablet) ===== */
+@media (min-width: 48rem) {
+  :root {
+    --text-xs: 0.71875rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.5rem;
+  }
+}
+
+/* ===== Responsive type scale (desktop) ===== */
+@media (min-width: 64rem) {
+  :root {
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.25rem;
+    --text-xl: 1.75rem;
+  }
+}
