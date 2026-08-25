@@ -3,6 +3,11 @@ import { supabase } from './supabaseClient.js'
 const SESSION_KEY = 'bennu.session:v1'
 const THEME_KEY = 'bennu.theme:v1'
 
+// Base URL del backend (Vercel -> Render). En dev, si VITE_API_URL no está
+// definida, se resuelve por el proxy de Vite hacia el backend local.
+const API_BASE = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '')
+const apiUrl = (path) => `${API_BASE}${path}`
+
 const read = (key, fallback) => {
   try {
     const raw = localStorage.getItem(key)
@@ -77,7 +82,7 @@ const withSucursal = (url, sucursalId) =>
 const fetchWithAuth = async (url) => {
   const token = await authToken()
   if (!token) throw new Error('Sin sesión')
-  const res = await fetch(url, {
+  const res = await fetch(apiUrl(url), {
     headers: { Authorization: `Bearer ${token}` },
   })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -89,7 +94,7 @@ const fetchWithAuth = async (url) => {
 // Mutate via backend API. Throws on failure: no mock fallback.
 const mutateBackend = async (method, url, body) => {
   const token = await authToken()
-  const res = await fetch(url, {
+  const res = await fetch(apiUrl(url), {
     method,
     headers: {
       'Content-Type': 'application/json',
@@ -105,7 +110,7 @@ const mutateBackend = async (method, url, body) => {
 
 // catalog
 export const listServices = async (sucursalId) => {
-  const res = await fetch(withSucursal('/api/services', sucursalId))
+  const res = await fetch(apiUrl(withSucursal('/api/services', sucursalId)))
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const json = await res.json()
   if (!json.success) throw new Error(json.message || 'Backend error')
@@ -267,7 +272,7 @@ export const getSettings = async () => {
 // Lectura pública (sin token) para el calendario del cliente.
 export const getPublicSettings = async () => {
   try {
-    const res = await fetch('/api/settings')
+    const res = await fetch(apiUrl('/api/settings'))
     if (!res.ok) return null
     const json = await res.json()
     return json.success ? mapSettings(json.data) : null
@@ -296,7 +301,7 @@ export const saveSettings = async (settings) => {
 export const listAvailability = async (date, serviceId) => {
   try {
     const q = serviceId != null ? `?service_id=${encodeURIComponent(serviceId)}` : ''
-    const res = await fetch(`/api/availability/${date}${q}`)
+    const res = await fetch(apiUrl(`/api/availability/${date}${q}`))
     if (!res.ok) return null
     const json = await res.json()
     if (!json.success) return null
@@ -309,7 +314,7 @@ export const listAvailability = async (date, serviceId) => {
 // Disponibilidad de un rango de fechas en una sola llamada (puntos del calendario).
 export const listAvailabilityRange = async (from, to) => {
   try {
-    const res = await fetch(`/api/availability/range?from=${from}&to=${to}`)
+    const res = await fetch(apiUrl(`/api/availability/range?from=${from}&to=${to}`))
     if (!res.ok) return null
     const json = await res.json()
     return json.success ? json.data?.days : null
@@ -323,7 +328,7 @@ export const createPublicBooking = async ({ serviceId, fechaHora, name, email, p
   const { data } = await supabase.auth.getSession()
   const token = data?.session?.access_token
   const url = '/api/bookings'
-  const res = await fetch(url, {
+  const res = await fetch(apiUrl(url), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -348,7 +353,7 @@ export const createPublicBooking = async ({ serviceId, fechaHora, name, email, p
 // Obtener una cita pública (confirmación/pago).
 export const getPublicBooking = async (id) => {
   try {
-    const res = await fetch(`/api/bookings/${id}`)
+    const res = await fetch(apiUrl(`/api/bookings/${id}`))
     if (!res.ok) return null
     const json = await res.json()
     return json.success ? json.data : null
@@ -359,7 +364,7 @@ export const getPublicBooking = async (id) => {
 
 // Cancela una reserva pública pendiente: libera el turno.
 export const cancelPublicBooking = async (id) => {
-  const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE' })
+  const res = await fetch(apiUrl(`/api/bookings/${id}`), { method: 'DELETE' })
   const json = await res.json().catch(() => null)
   if (!res.ok || !json?.success) throw new Error(json?.message || 'No se pudo cancelar la reserva')
   return json.data
@@ -367,7 +372,7 @@ export const cancelPublicBooking = async (id) => {
 
 // Mercado Pago — genera la preferencia de Checkout Pro para pagar una reserva.
 export const crearPagoReserva = async (appointmentId) => {
-  const res = await fetch('/api/pagos/preference/reserva', {
+  const res = await fetch(apiUrl('/api/pagos/preference/reserva'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ appointmentId: Number(appointmentId) }),
@@ -379,7 +384,7 @@ export const crearPagoReserva = async (appointmentId) => {
 
 // Mercado Pago — preferencia para la diferencia de un canje (pago tipo 'combo').
 export const crearPagoCanje = async (pagoId) => {
-  const res = await fetch('/api/pagos/preference/canje', {
+  const res = await fetch(apiUrl('/api/pagos/preference/canje'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pagoId: Number(pagoId) }),
@@ -394,7 +399,7 @@ export const crearPagoCanje = async (pagoId) => {
 export const getPagoEstado = async (pagoId, paymentId) => {
   try {
     const q = paymentId ? `?payment_id=${encodeURIComponent(paymentId)}` : ''
-    const res = await fetch(`/api/pagos/${pagoId}${q}`)
+    const res = await fetch(apiUrl(`/api/pagos/${pagoId}${q}`))
     if (!res.ok) return null
     const json = await res.json()
     return json.success ? json.data : null
@@ -407,7 +412,7 @@ export const getPagoEstado = async (pagoId, paymentId) => {
 // en la URL de retorno). El backend reconcilia contra MP si quedó pendiente.
 export const getPagoPorReserva = async (appointmentId) => {
   try {
-    const res = await fetch(`/api/pagos/por-reserva/${Number(appointmentId)}`)
+    const res = await fetch(apiUrl(`/api/pagos/por-reserva/${Number(appointmentId)}`))
     if (!res.ok) return null
     const json = await res.json()
     return json.success ? json.data : null
@@ -455,7 +460,7 @@ const mapSuscripcion = (s) =>
 
 const getPublicJson = async (url) => {
   try {
-    const res = await fetch(url)
+    const res = await fetch(apiUrl(url))
     if (!res.ok) return null
     const json = await res.json()
     return json.success ? json.data : null
@@ -511,7 +516,7 @@ export const getMiSuscripcion = async () => {
 export const crearPagoSuscripcion = async (planId) => {
   const token = await authToken()
   if (!token) throw new Error('Sin sesión')
-  const res = await fetch('/api/suscripciones/pagar', {
+  const res = await fetch(apiUrl('/api/suscripciones/pagar'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ plan_id: Number(planId) }),
@@ -523,7 +528,7 @@ export const crearPagoSuscripcion = async (planId) => {
 
 // Mercado Pago — preferencia para pagar la membresía mensual.
 export const crearPagoMembresia = async (pagoId) => {
-  const res = await fetch('/api/pagos/preference/suscripcion', {
+  const res = await fetch(apiUrl('/api/pagos/preference/suscripcion'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pagoId: Number(pagoId) }),
@@ -547,7 +552,7 @@ export const fetchMe = async () => {
   const { data } = await supabase.auth.getSession()
   const token = data?.session?.access_token
   if (!token) return null
-  const res = await fetch('/api/auth/me', {
+  const res = await fetch(apiUrl('/api/auth/me'), {
     headers: { Authorization: `Bearer ${token}` },
   })
   if (!res.ok) {
@@ -615,7 +620,7 @@ export const listCombos = async (includeInactive = false, sucursalId) => {
 // Combo individual (público, para la página de pago de un canje).
 export const getCombo = async (id) => {
   try {
-    const res = await fetch(`/api/combos/${Number(id)}`)
+    const res = await fetch(apiUrl(`/api/combos/${Number(id)}`))
     if (!res.ok) return null
     const json = await res.json()
     return json.success ? mapCombo(json.data) : null
@@ -655,7 +660,7 @@ export const listComboAvailability = async (date, duration, capacidad) => {
     if (duration != null) params.push(`duration=${encodeURIComponent(duration)}`)
     if (capacidad != null) params.push(`capacidad=${encodeURIComponent(capacidad)}`)
     const q = params.length ? `?${params.join('&')}` : ''
-    const res = await fetch(`/api/combos/availability/${date}${q}`)
+    const res = await fetch(apiUrl(`/api/combos/availability/${date}${q}`))
     if (!res.ok) return null
     const json = await res.json()
     if (!json.success) return null
@@ -668,7 +673,7 @@ export const listComboAvailability = async (date, duration, capacidad) => {
 // Disponibilidad de un rango de fechas en UNA llamada (puntos del calendario de canje).
 export const listComboAvailabilityRange = async (from, to) => {
   try {
-    const res = await fetch(`/api/combos/availability/range?from=${from}&to=${to}`)
+    const res = await fetch(apiUrl(`/api/combos/availability/range?from=${from}&to=${to}`))
     if (!res.ok) return null
     const json = await res.json()
     return json.success ? json.data?.days : null
