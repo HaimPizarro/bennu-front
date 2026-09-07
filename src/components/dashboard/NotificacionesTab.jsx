@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import Modal from '../Modal.jsx'
 import { listTodasNotificaciones, enviarNotificacion, eliminarNotificacion } from '../../lib/api.js'
+import useSearch from '../../hooks/useSearch.js'
+import SearchInput from './SearchInput.jsx'
 
 const safeList = (n) => (Array.isArray(n) ? n : []).filter(Boolean)
 
@@ -9,6 +11,8 @@ export default function NotificacionesTab() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ titulo: '', mensaje: '', tipo: 'sistema' })
   const [sending, setSending] = useState(false)
+  const { query, setQuery, filtered, hasQuery } = useSearch(items, ['titulo', 'mensaje', 'tipo'])
+  const rows = safeList(filtered)
 
   const load = async () => setItems(await listTodasNotificaciones())
 
@@ -48,6 +52,8 @@ export default function NotificacionesTab() {
         (broadcast). Las de citas se generan automáticamente.
       </p>
 
+      <SearchInput value={query} onChange={setQuery} placeholder="Buscar notificación por título o mensaje" />
+
       <div className="table-wrap">
         <table className="data-table">
           <thead>
@@ -61,14 +67,14 @@ export default function NotificacionesTab() {
             </tr>
           </thead>
           <tbody>
-            {safeList(items).length === 0 && (
+            {rows.length === 0 && (
               <tr>
                 <td colSpan="6" className="data-table__empty" data-label="">
-                  Sin notificaciones
+                  {hasQuery ? `Sin resultados para "${query}"` : 'Sin notificaciones'}
                 </td>
               </tr>
             )}
-            {safeList(items).map((n) => (
+            {rows.map((n) => (
               <tr key={n.id}>
                 <td data-label="Tipo">
                   <span className="chip">{n.tipo}</span>

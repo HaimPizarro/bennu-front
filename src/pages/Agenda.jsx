@@ -10,7 +10,6 @@ import {
   createPublicBooking,
   getSession,
 } from '../lib/api.js'
-import { categoryName } from '../lib/data.js'
 import { formatDate, getMonthGrid, MONTHS, WEEKDAYS, nearestTime, maxBookingDate, MAX_BOOKING_DAYS } from '../lib/date.js'
 import '../styles/agenda.css'
 
@@ -313,7 +312,7 @@ export default function Agenda() {
                     >
                       <span className="booking-service__name">{s.name}</span>
                       <span className="booking-service__meta">
-                        {categoryName(s.category)} · {s.duration} min
+                        {s.category || 'Servicio'} · {s.duration} min
                       </span>
                          <span className="booking-service__foot">
                          <span className="booking-service__price">

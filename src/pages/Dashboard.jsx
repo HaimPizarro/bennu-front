@@ -5,8 +5,10 @@ import { ADMIN_NAV } from '../components/dashboard/navItems.js'
 import ResumenTab from '../components/dashboard/ResumenTab.jsx'
 import AgendaTab from '../components/dashboard/AgendaTab.jsx'
 import ServiciosTab from '../components/dashboard/ServiciosTab.jsx'
+import CategoriasTab from '../components/dashboard/CategoriasTab.jsx'
 import EmpleadosTab from '../components/dashboard/EmpleadosTab.jsx'
 import ClientesTab from '../components/dashboard/ClientesTab.jsx'
+import VisitantesTab from '../components/dashboard/VisitantesTab.jsx'
 import FidelizacionTab from '../components/dashboard/FidelizacionTab.jsx'
 import SuscripcionesTab from '../components/dashboard/SuscripcionesTab.jsx'
 import HorariosTab from '../components/dashboard/HorariosTab.jsx'
@@ -16,6 +18,7 @@ import NotificacionesTab from '../components/dashboard/NotificacionesTab.jsx'
 import GoogleCalendarTab from '../components/dashboard/GoogleCalendarTab.jsx'
 import AparienciaTab from '../components/dashboard/AparienciaTab.jsx'
 import ContenidoTab from '../components/dashboard/ContenidoTab.jsx'
+import IntegracionesTab from '../components/dashboard/IntegracionesTab.jsx'
 import ErrorBoundary from '../components/ErrorBoundary.jsx'
 import '../styles/agenda.css'
 import '../styles/dashboard.css'
@@ -78,6 +81,7 @@ export default function Dashboard() {
           onDelete={data.handleDeleteService}
         />
       )}
+      {data.tab === 'categorias' && <CategoriasTab />}
       {data.tab === 'empleados' && (
         <EmpleadosTab
           empleados={data.empleados}
@@ -94,6 +98,7 @@ export default function Dashboard() {
           onDelete={data.handleDeleteUser}
         />
       )}
+      {data.tab === 'visitantes' && <VisitantesTab />}
       {data.tab === 'fidelizacion' && (
         <FidelizacionTab
           combos={data.combos}
@@ -133,6 +138,7 @@ export default function Dashboard() {
       {data.tab === 'google' && <GoogleCalendarTab />}
       {data.tab === 'apariencia' && <AparienciaTab />}
       {data.tab === 'contenido' && <ContenidoTab />}
+      {data.tab === 'integraciones' && <IntegracionesTab />}
       </ErrorBoundary>
     </DashboardLayout>
   )

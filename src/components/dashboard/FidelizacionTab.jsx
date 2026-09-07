@@ -2,6 +2,8 @@ import { useState } from 'react'
 import Modal from '../Modal.jsx'
 import ConfirmDialog from '../ConfirmDialog.jsx'
 import { formatCurrency } from '../../lib/data.js'
+import useSearch from '../../hooks/useSearch.js'
+import SearchInput from './SearchInput.jsx'
 
 const EMPTY_FORM = {
   name: '',
@@ -39,6 +41,8 @@ export default function FidelizacionTab({ combos, services, serviceById, onSaveC
   const [editingId, setEditingId] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [saving, setSaving] = useState(false)
+  const { query, setQuery, filtered, hasQuery } = useSearch(combos, ['name'])
+  const rows = safeServices(filtered)
 
   const catalog = safeServices(services)
 
@@ -140,8 +144,13 @@ export default function FidelizacionTab({ combos, services, serviceById, onSaveC
         </button>
       </div>
 
+      <SearchInput value={query} onChange={setQuery} placeholder="Buscar canje por nombre" />
+      {hasQuery && rows.length === 0 && (
+        <p className="muted">Sin resultados para “{query}”.</p>
+      )}
+
       <ul className="dash-list">
-        {combos.map((c) => (
+        {rows.map((c) => (
           <li key={c.id} className="dash-row">
             <div className="dash-row__main">
               <span className="dash-row__name">{c.name}</span>

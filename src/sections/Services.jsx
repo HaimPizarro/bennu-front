@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { listServices } from '../lib/api.js'
-import { CATEGORIES, categoryName } from '../lib/data.js'
+import { listServices, listCategorias } from '../lib/api.js'
 import ServicePrice from '../components/ServicePrice.jsx'
 import Reveal from '../components/Reveal.jsx'
 import { useSiteContent } from '../context/siteContent.js'
 
-const TABS = [{ id: 'todos', name: 'Todos' }, ...CATEGORIES]
 const SERVICES_PER_PAGE = 6
 
 export default function Services() {
   const [services, setServices] = useState([])
+  const [categories, setCategories] = useState([])
   const [category, setCategory] = useState('todos')
   const [loading, setLoading] = useState(true)
   const [visibleCount, setVisibleCount] = useState(SERVICES_PER_PAGE)
@@ -19,9 +18,10 @@ export default function Services() {
 
   useEffect(() => {
     let alive = true
-    listServices().then((data) => {
+    Promise.all([listServices(), listCategorias()]).then(([data, cats]) => {
       if (alive) {
         setServices(data)
+        setCategories(cats)
         setLoading(false)
       }
     })
@@ -36,6 +36,10 @@ export default function Services() {
 
   const displayed = visible.slice(0, visibleCount)
   const hasMore = visibleCount < visible.length
+  const tabs = [
+    { id: 'todos', name: 'Todos' },
+    ...categories.map((c) => ({ id: c.nombre, name: c.nombre })),
+  ]
 
   const handleCategoryChange = (newCategory) => {
     setCategory(newCategory)
@@ -57,7 +61,7 @@ export default function Services() {
 
         <Reveal delay={120}>
           <div className="tabs" role="tablist" aria-label="Categorías de servicios">
-          {TABS.map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
@@ -85,7 +89,7 @@ export default function Services() {
                   {displayed.map((service) => (
                     <li key={service.id} className="card">
                       <div className="card__top">
-                        <span className="card__tag">{categoryName(service.category)}</span>
+                        <span className="card__tag">{service.category || ''}</span>
                         <span className="card__duration">{service.duration} min</span>
                       </div>
                       <h3 className="card__title">{service.name}</h3>

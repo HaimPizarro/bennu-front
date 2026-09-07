@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useSiteContent } from '../context/siteContent.js'
 import MediaSlider from '../components/MediaSlider.jsx'
+import { useVisitor } from '../context/visitanteContext.js'
+import { displayName } from '../lib/visitante.js'
 
 // Los destinos pueden ser rutas internas (/agenda) o anclas (#servicios).
 function CtaLink({ cta, className }) {
@@ -20,13 +22,35 @@ function CtaLink({ cta, className }) {
 
 export default function Hero() {
   const { contenido } = useSiteContent()
+  const { profile, authed, ready } = useVisitor()
   const hero = contenido.hero || {}
   const hasTitleDot = !/([.!?])\s*$/.test(hero.titulo || '')
   const imagenes = (Array.isArray(hero.imagenes) ? hero.imagenes : []).filter((img) => img && img.url)
+  const name = displayName(profile)
 
   return (
     <section id="inicio" className="hero">
       <div className="container">
+        {authed && ready && !profile && (
+          <p className="welcome-greet welcome-greet--setup" role="status">
+            <span>
+              Hola, queremos saludarte por tu nombre.{' '}
+              <Link className="welcome-greet__edit" to="/perfil">
+                Configurar bienvenida
+              </Link>
+            </span>
+          </p>
+        )}
+        {profile && name && (
+          <p className="welcome-greet" role="status">
+            <span>
+              ¡Hola, <strong>{name}</strong>! Qué gusto verte.{' '}
+              <Link className="welcome-greet__edit" to="/perfil">
+                (¿Eres otra persona? Cambiar)
+              </Link>
+            </span>
+          </p>
+        )}
         {hero.eyebrow && (
           <p className="hero-anim eyebrow" style={{ animationDelay: '0ms' }}>
             {hero.eyebrow}

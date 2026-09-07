@@ -2,6 +2,8 @@ import { useState } from 'react'
 import Modal from '../Modal.jsx'
 import ConfirmDialog from '../ConfirmDialog.jsx'
 import { formatDate } from '../../lib/date.js'
+import useSearch from '../../hooks/useSearch.js'
+import SearchInput from './SearchInput.jsx'
 
 const ESTADOS = ['Programado', 'En curso', 'Finalizado', 'Cancelado']
 const TIPOS = ['evento', 'taller', 'clase', 'promocion', 'mantenimiento']
@@ -28,6 +30,8 @@ export default function EventosTab({ eventos, onSave, onDelete }) {
   const [isNew, setIsNew] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const { query, setQuery, filtered, hasQuery } = useSearch(eventos, ['name', 'lugar', 'tipo'])
+  const rows = safeEventos(filtered)
 
   const startNew = () => {
     setEditing(EMPTY_EVENTO)
@@ -94,6 +98,11 @@ export default function EventosTab({ eventos, onSave, onDelete }) {
         Talleres, clases y fechas especiales que bloquean la agenda o se promocionan al público.
       </p>
 
+      <SearchInput value={query} onChange={setQuery} placeholder="Buscar evento por nombre o lugar" />
+      {hasQuery && rows.length === 0 && (
+        <p className="muted">Sin resultados para “{query}”.</p>
+      )}
+
       <div className="table-wrap">
         <table className="data-table">
           <thead>
@@ -107,7 +116,7 @@ export default function EventosTab({ eventos, onSave, onDelete }) {
             </tr>
           </thead>
           <tbody>
-            {safeEventos(eventos).map((ev) => (
+            {rows.map((ev) => (
               <tr key={ev.id}>
                 <td data-label="Evento">
                   <span className="data-table__name">{ev.name}</span>

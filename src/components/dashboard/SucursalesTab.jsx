@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import Modal from '../Modal.jsx'
 import ConfirmDialog from '../ConfirmDialog.jsx'
+import useSearch from '../../hooks/useSearch.js'
+import SearchInput from './SearchInput.jsx'
 
 const EMPTY = { id: '', name: '', direccion: '', telefono: '', activa: true }
 
@@ -12,6 +14,8 @@ export default function SucursalesTab({ sucursales, onSave, onDelete }) {
   const [isNew, setIsNew] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const { query, setQuery, filtered, hasQuery } = useSearch(sucursales, ['name', 'direccion'])
+  const rows = safeList(filtered)
 
   const startNew = () => {
     setEditing(EMPTY)
@@ -64,6 +68,8 @@ export default function SucursalesTab({ sucursales, onSave, onDelete }) {
         eventos. Cambia la sucursal activa desde el selector del sidebar.
       </p>
 
+      <SearchInput value={query} onChange={setQuery} placeholder="Buscar sucursal por nombre o dirección" />
+
       <div className="table-wrap">
         <table className="data-table">
           <thead>
@@ -76,14 +82,14 @@ export default function SucursalesTab({ sucursales, onSave, onDelete }) {
             </tr>
           </thead>
           <tbody>
-            {safeList(sucursales).length === 0 && (
+            {rows.length === 0 && (
               <tr>
                 <td colSpan="5" className="data-table__empty" data-label="">
-                  Sin sucursales
+                  {hasQuery ? `Sin resultados para "${query}"` : 'Sin sucursales'}
                 </td>
               </tr>
             )}
-            {safeList(sucursales).map((s) => (
+            {rows.map((s) => (
               <tr key={s.id}>
                 <td data-label="Nombre">
                   <span className="data-table__name">{s.name}</span>

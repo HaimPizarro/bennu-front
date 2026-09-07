@@ -110,6 +110,26 @@ export const DEFAULT_CONTENIDO = {
       { etiqueta: 'Horario', valor: 'Lun a Vie 9:00–18:00', tipo: 'horario' },
     ],
   },
+  tema: {
+    // Paleta de marca global (la edita el admin en Apariencia). Se aplica para
+    // todos los visitantes; valores iguales al default claro usan las variables
+    // CSS propias (y el modo oscuro personal).
+    colors: {
+      bg: '#feffff',
+      'bg-mist': '#eff5f9',
+      steel: '#5d7a8c',
+      mist: '#9cafbe',
+      slate: '#3e4349',
+    },
+  },
+}
+
+export const TEMA_DEFAULT_COLORS = {
+  bg: '#feffff',
+  'bg-mist': '#eff5f9',
+  steel: '#5d7a8c',
+  mist: '#9cafbe',
+  slate: '#3e4349',
 }
 
 export const CONTACTO_TIPOS = [

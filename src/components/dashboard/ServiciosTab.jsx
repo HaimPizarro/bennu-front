@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Modal from '../Modal.jsx'
 import ConfirmDialog from '../ConfirmDialog.jsx'
-import { CATEGORIES, categoryName, formatCurrency } from '../../lib/data.js'
+import { formatCurrency } from '../../lib/data.js'
+import { listCategorias } from '../../lib/api.js'
+import useSearch from '../../hooks/useSearch.js'
+import SearchInput from './SearchInput.jsx'
 
 const EMPTY_SERVICE = {
   id: '',
@@ -14,7 +17,7 @@ const EMPTY_SERVICE = {
   capacidad: '1',
   buffer_previo: '',
   buffer_posterior: '',
-  category: CATEGORIES[0].id,
+  category: '',
   puntos_otorgados: '',
   active: true,
   esCombo: false,
@@ -39,6 +42,23 @@ export default function ServiciosTab({ services, onSave, onDelete }) {
   const [isNew, setIsNew] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [categories, setCategories] = useState([])
+  const { query, setQuery, filtered, hasQuery } = useSearch(services, [
+    'name',
+    'description',
+    'category',
+  ])
+  const rows = safeServices(filtered)
+
+  useEffect(() => {
+    listCategorias().then((cats) => setCategories(Array.isArray(cats) ? cats : []))
+  }, [])
+
+  const categoryOptions = (() => {
+    const opts = categories.map((c) => c.nombre)
+    if (editing.category && !opts.includes(editing.category)) opts.push(editing.category)
+    return opts
+  })()
 
   const selectable = safeServices(services).filter((s) => s.id !== editing.id)
 
@@ -156,6 +176,11 @@ export default function ServiciosTab({ services, onSave, onDelete }) {
         </button>
       </div>
 
+      <SearchInput value={query} onChange={setQuery} placeholder="Buscar servicio por nombre, categoría o descripción" />
+      {hasQuery && rows.length === 0 && (
+        <p className="muted">Sin resultados para “{query}”.</p>
+      )}
+
       <div className="table-wrap">
         <table className="data-table">
           <thead>
@@ -171,7 +196,7 @@ export default function ServiciosTab({ services, onSave, onDelete }) {
             </tr>
           </thead>
           <tbody>
-            {safeServices(services).map((s) => (
+            {rows.map((s) => (
               <tr key={s.id}>
                 <td data-label="Servicio">
                   <span className="data-table__name">
@@ -179,7 +204,7 @@ export default function ServiciosTab({ services, onSave, onDelete }) {
                     {s.servicios_combo_ids?.length > 0 && <span className="chip chip--steel">combo</span>}
                   </span>
                   <span className="data-table__meta">
-                    {categoryName(s.category)} · {s.description}
+                    {s.category || 'Sin categoría'} · {s.description}
                   </span>
                 </td>
                 <td data-label="Precio">
@@ -347,9 +372,10 @@ export default function ServiciosTab({ services, onSave, onDelete }) {
                   value={editing.category}
                   onChange={(e) => setEditing({ ...editing, category: e.target.value })}
                 >
-                  {CATEGORIES.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
+                  <option value="">Sin categoría</option>
+                  {categoryOptions.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
                     </option>
                   ))}
                 </select>

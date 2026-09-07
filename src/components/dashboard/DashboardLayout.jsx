@@ -176,10 +176,14 @@ export default function DashboardLayout({
         </nav>
 
         <div className="dash__side-footer">
-          <div className="dash__side-user">
+          <Link
+            className="dash__side-user dash__side-user--btn"
+            to="/perfil"
+            title="Ver o editar mis datos"
+          >
             <span className="dash__profile">{initials}</span>
             {points != null && <span className="pts-chip">✦ {points} pts</span>}
-          </div>
+          </Link>
           <button className="btn btn--ghost btn--sm" type="button" onClick={onLogout}>
             Salir
           </button>

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import Modal from '../Modal.jsx'
 import ConfirmDialog from '../ConfirmDialog.jsx'
+import useSearch from '../../hooks/useSearch.js'
+import SearchInput from './SearchInput.jsx'
 
 const EMPTY_EMPLEADO = {
   id: '',
@@ -21,6 +23,8 @@ export default function EmpleadosTab({ empleados, services, onSave, onDelete }) 
   const [isNew, setIsNew] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const { query, setQuery, filtered, hasQuery } = useSearch(empleados, ['name', 'specialty', 'email'])
+  const rows = safeEmpleados(filtered)
 
   const startNew = () => {
     setEditing(EMPTY_EMPLEADO)
@@ -81,6 +85,15 @@ export default function EmpleadosTab({ empleados, services, onSave, onDelete }) 
         </button>
       </div>
 
+      <SearchInput
+        value={query}
+        onChange={setQuery}
+        placeholder="Buscar empleados por nombre, especialidad o email"
+      />
+      {hasQuery && rows.length === 0 && (
+        <p className="muted">Sin resultados para “{query}”.</p>
+      )}
+
       <div className="table-wrap">
         <table className="data-table">
           <thead>
@@ -94,7 +107,7 @@ export default function EmpleadosTab({ empleados, services, onSave, onDelete }) 
             </tr>
           </thead>
           <tbody>
-            {safeEmpleados(empleados).map((e) => (
+            {rows.map((e) => (
               <tr key={e.id}>
                 <td data-label="Nombre">
                   <span className="data-table__name">{e.name}</span>

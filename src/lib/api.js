@@ -118,6 +118,32 @@ export const listServices = async (sucursalId) => {
   return (Array.isArray(data) ? data : []).filter(Boolean).map(normalizeService)
 }
 
+// Categorías de servicios (lectura pública; mutaciones solo admin).
+export const listCategorias = async () => {
+  try {
+    const res = await fetch(apiUrl('/api/categorias'))
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.success ? json.data : []
+  } catch {
+    return []
+  }
+}
+
+export const saveCategoria = async (categoria) => {
+  const isNew = !categoria.id
+  const saved = await mutateBackend(
+    isNew ? 'POST' : 'PUT',
+    isNew ? '/api/categorias' : `/api/categorias/${categoria.id}`,
+    { nombre: categoria.nombre },
+  )
+  return saved
+}
+
+export const deleteCategoria = async (id) => {
+  await mutateBackend('DELETE', `/api/categorias/${id}`, null)
+}
+
 export const saveService = async (service) => {
   const isNew = typeof service.id === 'string' && service.id.startsWith('s-')
   const url = isNew ? '/api/services' : `/api/services/${service.id}`
@@ -1177,6 +1203,48 @@ export const saveContenido = async (contenido) => {
   const saved = await mutateBackend('PUT', '/api/contenido', { contenido })
   return saved
 }
+
+// Integraciones (correo saliente + Mercado Pago). Solo admin.
+export const getIntegraciones = async () => fetchWithAuth('/api/integraciones')
+
+export const saveIntegraciones = async (payload) => {
+  const saved = await mutateBackend('PUT', '/api/integraciones', payload)
+  return saved
+}
+
+export const testEmailIntegracion = async () =>
+  mutateBackend('POST', '/api/integraciones/test-email', {})
+
+export const testMpIntegracion = async () =>
+  mutateBackend('POST', '/api/integraciones/test-mp', {})
+
+// Perfil de bienvenida por cuenta (solo usuarios logueados).
+export const guardarVisitante = async (payload) =>
+  mutateBackend('POST', '/api/visitantes', {
+    nombre: payload.nombre,
+    alias: payload.alias,
+    edad: payload.edad ?? null,
+  })
+
+export const getMiVisitante = async () => fetchWithAuth('/api/visitantes/me')
+
+export const quitarMiVisitante = async () =>
+  mutateBackend('DELETE', '/api/visitantes/me', null)
+
+export const listVisitantes = async () => fetchWithAuth('/api/visitantes')
+
+export const eliminarVisitante = async (id) =>
+  mutateBackend('DELETE', `/api/visitantes/${id}`, null)
+
+// Perfil propio (página /perfil).
+export const updateMiPerfil = async (payload) =>
+  mutateBackend('PUT', '/api/users/me', {
+    nombre: payload.nombre,
+    telefono: payload.telefono ?? null,
+  })
+
+export const eliminarMiCuenta = async () =>
+  mutateBackend('POST', '/api/auth/delete-account', {})
 
 // theme (apariencia)
 export const getTheme = () => read(THEME_KEY, null)

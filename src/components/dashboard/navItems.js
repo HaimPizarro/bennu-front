@@ -2,8 +2,10 @@ export const ADMIN_NAV = [
   { id: 'resumen', label: 'Resumen', icon: '◈' },
   { id: 'agenda', label: 'Agenda', icon: '▦', group: 'operaciones' },
   { id: 'servicios', label: 'Servicios', icon: '✦', group: 'operaciones' },
+  { id: 'categorias', label: 'Categorías', icon: '❏', group: 'operaciones' },
   { id: 'empleados', label: 'Empleados', icon: '♟', group: 'operaciones' },
   { id: 'clientes', label: 'Clientes', icon: '◉', group: 'operaciones' },
+  { id: 'visitantes', label: 'Visitantes', icon: '☺', group: 'operaciones' },
   { id: 'fidelizacion', label: 'Fidelización', icon: '♥', group: 'operaciones' },
   { id: 'membresias', label: 'Membresías', icon: '✧', group: 'operaciones' },
   { id: 'horarios', label: 'Horarios', icon: '☰', group: 'gestion' },
@@ -12,6 +14,7 @@ export const ADMIN_NAV = [
   { id: 'eventos', label: 'Eventos', icon: '❉', group: 'gestion' },
   { id: 'notificaciones', label: 'Notificaciones', icon: '◌', group: 'sistema' },
   { id: 'google', label: 'Google Calendar', icon: '⟳', group: 'sistema' },
+  { id: 'integraciones', label: 'Pagos y correo', icon: '✉', group: 'sistema' },
   { id: 'apariencia', label: 'Apariencia', icon: '❖', group: 'sistema' },
 ]
 

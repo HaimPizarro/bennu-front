@@ -1,6 +1,11 @@
 import { useState } from 'react'
 
-const LIGHT_DEFAULT = {
+// Paleta por defecto (clara). La paleta de marca (global, para todos los
+// visitantes) se guarda en la DB (contenido_sitio.tema.colors) y se aplica con
+// applyBrandColors() una vez que el contenido llega. El modo claro/oscuro y el
+// prisma siguen siendo preferencias personales por navegador (localStorage).
+
+export const LIGHT_DEFAULT = {
   bg: '#feffff',
   'bg-mist': '#eff5f9',
   steel: '#5d7a8c',
@@ -16,13 +21,13 @@ const VAR_OF = {
   slate: '--slate',
 }
 
-const THEME_KEY = 'bennu.theme:v1'
 const PREFS_KEY = 'bennu.prefs:v1'
 
 const DEFAULT_PREFS = { mode: 'system', prisma: true }
 
 let systemListenerActive = false
 let systemListenerHandler = null
+let brandColors = { ...LIGHT_DEFAULT }
 
 const loadJSON = (key, fallback) => {
   try {
@@ -42,27 +47,29 @@ const saveJSON = (key, value) => {
 }
 
 const loadPrefs = () => ({ ...DEFAULT_PREFS, ...loadJSON(PREFS_KEY, {}) })
-const loadColors = () => {
-  const saved = loadJSON(THEME_KEY, null)
-  return { ...LIGHT_DEFAULT, ...saved }
-}
-
-// En modo oscuro se eliminan los valores inline que coinciden con el default
-// claro (no personalizados), para que la paleta oscura se aplique limpia.
-const applyColors = (colors, theme) => {
-  const root = document.documentElement
-  Object.entries(VAR_OF).forEach(([key, cssVar]) => {
-    if (theme === 'dark' && colors[key] === LIGHT_DEFAULT[key]) {
-      root.style.removeProperty(cssVar)
-      return
-    }
-    root.style.setProperty(cssVar, colors[key])
-  })
-}
 
 const applyPrisma = (enabled) => {
   document.body.classList.toggle('prisma-enabled', enabled)
 }
+
+// Aplica la paleta de marca (global) sobre las variables CSS: los valores que
+// coinciden con el default claro se quitan para que funcionen las variables
+// propias (incluido el modo oscuro); los personalizados se fijan inline.
+export const applyBrandColors = (palette) => {
+  const merged = { ...LIGHT_DEFAULT, ...(palette || {}) }
+  brandColors = merged
+  const root = document.documentElement
+  Object.entries(VAR_OF).forEach(([key, cssVar]) => {
+    const value = merged[key]
+    if (!value || value.toLowerCase() === LIGHT_DEFAULT[key]) {
+      root.style.removeProperty(cssVar)
+    } else {
+      root.style.setProperty(cssVar, value)
+    }
+  })
+}
+
+export const getBrandColors = () => ({ ...brandColors })
 
 export const resolveTheme = (mode) => {
   if (mode === 'dark') return 'dark'
@@ -71,9 +78,7 @@ export const resolveTheme = (mode) => {
 }
 
 const onSystemChange = (mq) => {
-  const theme = mq.matches ? 'dark' : 'light'
-  document.documentElement.dataset.theme = theme
-  applyColors(loadColors(), theme)
+  document.documentElement.dataset.theme = mq.matches ? 'dark' : 'light'
 }
 
 const syncSystemListener = (mode) => {
@@ -91,11 +96,11 @@ const syncSystemListener = (mode) => {
   }
 }
 
+// Aplicación al arranque (antes del fetch del contenido): modo, prisma y
+// dataset de tema. La paleta de marca se aplica cuando llega el contenido.
 export const applySavedTheme = () => {
   const prefs = loadPrefs()
-  const theme = resolveTheme(prefs.mode)
-  document.documentElement.dataset.theme = theme
-  applyColors(loadColors(), theme)
+  document.documentElement.dataset.theme = resolveTheme(prefs.mode)
   applyPrisma(prefs.prisma !== false)
   syncSystemListener(prefs.mode)
 }
@@ -106,37 +111,12 @@ export const watchSystemTheme = () => {
 }
 
 export const useThemeColors = () => {
-  const [colors, setColors] = useState(loadColors)
   const [prefs, setPrefs] = useState(loadPrefs)
-
-  const currentTheme = () => document.documentElement.dataset.theme || resolveTheme(prefs.mode)
-
-  const setColor = (key, value) => {
-    setColors((curr) => {
-      const next = { ...curr, [key]: value }
-      applyColors(next, currentTheme())
-      saveJSON(THEME_KEY, next)
-      return next
-    })
-  }
-
-  const resetColors = () => {
-    const root = document.documentElement
-    Object.values(VAR_OF).forEach((cssVar) => root.style.removeProperty(cssVar))
-    setColors(LIGHT_DEFAULT)
-    try {
-      localStorage.removeItem(THEME_KEY)
-    } catch {
-      // noop
-    }
-  }
 
   const setMode = (mode) => {
     setPrefs((curr) => {
       const next = { ...curr, mode }
-      const theme = resolveTheme(mode)
-      document.documentElement.dataset.theme = theme
-      applyColors(colors, theme)
+      document.documentElement.dataset.theme = resolveTheme(mode)
       syncSystemListener(mode)
       saveJSON(PREFS_KEY, next)
       return next
@@ -152,5 +132,5 @@ export const useThemeColors = () => {
     })
   }
 
-  return { colors, prefs, setColor, resetColors, setMode, setPrisma }
+  return { prefs, setMode, setPrisma }
 }
