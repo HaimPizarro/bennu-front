@@ -16,31 +16,40 @@ import PagoMembresia from './pages/PagoMembresia.jsx'
 import ConfirmacionPago from './pages/ConfirmacionPago.jsx'
 import CerrarVentana from './pages/CerrarVentana.jsx'
 import Login from './pages/Login.jsx'
+import Registro from './pages/Registro.jsx'
+import RecuperarContrasena from './pages/RecuperarContrasena.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import MiCuenta from './pages/MiCuenta.jsx'
+import SiteContentProvider from './context/SiteContentProvider.jsx'
+import SiteSeo from './components/SiteSeo.jsx'
 
 applySavedTheme()
 watchSystemTheme()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <ScrollManager />
-      <PageTransition />
-      <ToastContainer />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/agenda" element={<Agenda />} />
-        <Route path="/pago/:bookingId/exito" element={<ConfirmacionPago />} />
-        <Route path="/pago/canje/:pagoId" element={<PagoCanje />} />
-        <Route path="/pago/membresia/:pagoId" element={<PagoMembresia />} />
-        <Route path="/pago/:bookingId" element={<Payment />} />
-        <Route path="/cerrar" element={<CerrarVentana />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/mi-cuenta" element={<MiCuenta />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <SiteContentProvider>
+      <BrowserRouter>
+        <ScrollManager />
+        <PageTransition />
+        <ToastContainer />
+        <SiteSeo />
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/agenda" element={<Agenda />} />
+          <Route path="/pago/:bookingId/exito" element={<ConfirmacionPago />} />
+          <Route path="/pago/canje/:pagoId" element={<PagoCanje />} />
+          <Route path="/pago/membresia/:pagoId" element={<PagoMembresia />} />
+          <Route path="/pago/:bookingId" element={<Payment />} />
+          <Route path="/cerrar" element={<CerrarVentana />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Registro />} />
+          <Route path="/recuperar" element={<RecuperarContrasena />} />
+          <Route path="/mi-cuenta" element={<MiCuenta />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </SiteContentProvider>
   </StrictMode>,
 )

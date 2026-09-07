@@ -8,6 +8,7 @@ export const ADMIN_NAV = [
   { id: 'membresias', label: 'Membresías', icon: '✧', group: 'operaciones' },
   { id: 'horarios', label: 'Horarios', icon: '☰', group: 'gestion' },
   { id: 'sucursales', label: 'Sucursales', icon: '◫', group: 'gestion' },
+  { id: 'contenido', label: 'Contenido', icon: '❐', group: 'gestion' },
   { id: 'eventos', label: 'Eventos', icon: '❉', group: 'gestion' },
   { id: 'notificaciones', label: 'Notificaciones', icon: '◌', group: 'sistema' },
   { id: 'google', label: 'Google Calendar', icon: '⟳', group: 'sistema' },

@@ -1,8 +1,22 @@
 import { useState } from 'react'
 import Reveal from '../components/Reveal.jsx'
+import { useSiteContent } from '../context/siteContent.js'
+
+const hrefFor = (item) => {
+  const value = (item.valor || '').trim()
+  if (item.tipo === 'email' && value.includes('@')) return `mailto:${value}`
+  if (item.tipo === 'telefono') {
+    const digits = value.replace(/[^\d+]/g, '')
+    return digits ? `tel:${digits}` : null
+  }
+  if (item.tipo === 'redes') return /^https?:\/\//.test(value) ? value : null
+  return null
+}
 
 export default function Contact() {
   const [sent, setSent] = useState(false)
+  const { contenido } = useSiteContent()
+  const contacto = contenido.contacto || {}
 
   const onSubmit = (e) => {
     e.preventDefault()
@@ -13,17 +27,33 @@ export default function Contact() {
     <section id="contacto" className="section">
       <div className="container contact">
         <Reveal className="contact__info">
-          <p className="eyebrow">Contacto</p>
-          <h2 className="section__title">Contanos tu consulta</h2>
-          <p className="section__lead">
-            Respondemos a la brevedad. También puedes escribirnos directamente.
-          </p>
-          <ul className="contact__list">
-            <li>Dirección: Av. siempre 1234, Ciudad</li>
-            <li>Teléfono / WhatsApp: +54 11 5555 0202</li>
-            <li>Email: hola@bennu.com</li>
-            <li>Horario: Lun a Vie 9:00–18:00</li>
-          </ul>
+          <p className="eyebrow">{contacto.eyebrow}</p>
+          <h2 className="section__title">{contacto.titulo}</h2>
+          {contacto.lead && <p className="section__lead">{contacto.lead}</p>}
+          {Array.isArray(contacto.items) && contacto.items.length > 0 && (
+            <ul className="contact__list">
+              {contacto.items.map((item, i) => {
+                const href = hrefFor(item)
+                const inner = (
+                  <>
+                    <span className="contact__label">{item.etiqueta}</span>
+                    <span className="contact__value">{item.valor}</span>
+                  </>
+                )
+                return (
+                  <li className="contact__item" key={i}>
+                    {href ? (
+                      <a href={href} target={item.tipo === 'redes' ? '_blank' : undefined} rel="noreferrer">
+                        {inner}
+                      </a>
+                    ) : (
+                      inner
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
         </Reveal>
 
         <Reveal delay={150} className="contact__form">
@@ -48,7 +78,7 @@ export default function Contact() {
                 <textarea className="field__input" name="message" rows="4" required />
               </label>
               <button className="btn btn--primary" type="submit">
-                Enviar mensaje
+                {contacto.boton_formulario || 'Enviar mensaje'}
               </button>
             </>
           )}

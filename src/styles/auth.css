@@ -712,3 +712,51 @@
   font: 600 1rem var(--font-body);
   color: var(--slate);
 }
+
+/* ===== Avisos y recuperación de contraseña ===== */
+.auth-note {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.25rem;
+  background: var(--bg);
+  border: 1px solid color-mix(in srgb, var(--mist) 45%, transparent);
+  border-left: 3px solid var(--steel);
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.auth-note__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--slate);
+}
+
+.auth-note__body {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--mist);
+}
+
+.auth-note__actions {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.auth-note__sent {
+  display: grid;
+  gap: 0.85rem;
+  color: var(--slate);
+}
+
+.auth-note__sent p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.auth-recover {
+  margin-top: 1rem;
+}

@@ -1928,3 +1928,129 @@
     transition: none !important;
   }
 }
+
+/* ===== Contenido del sitio ===== */
+.cms-form {
+  max-width: 62rem;
+  margin-bottom: 3rem;
+}
+
+.cms-form .dash__subtitle {
+  padding-top: 0.5rem;
+}
+
+.cms-form .dash__subtitle:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.cms-tabs {
+  max-width: 62rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.cms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.cms-list {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.cms-row {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid color-mix(in srgb, var(--mist) 40%, transparent);
+  border-radius: 10px;
+}
+
+.cms-row__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cms-row__index {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--mist);
+}
+
+.cms-add {
+  justify-self: start;
+}
+
+.cms-image {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.cms-image__thumb {
+  overflow: hidden;
+  width: min(100%, 22rem);
+  aspect-ratio: 4 / 3;
+  border: 1px solid color-mix(in srgb, var(--mist) 45%, transparent);
+  border-radius: 10px;
+  background: var(--bg-mist);
+}
+
+.cms-image__thumb--wide {
+  width: 100%;
+  max-width: 30rem;
+  aspect-ratio: 16 / 9;
+}
+
+.cms-image__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cms-image__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.cms-image__alt {
+  flex: 1 1 16rem;
+  min-width: 14rem;
+}
+
+.cms-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 5rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px dashed color-mix(in srgb, var(--mist) 65%, transparent);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--mist);
+  font-size: 0.88rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 180ms ease, color 180ms ease;
+}
+
+.cms-drop:hover {
+  border-color: var(--steel);
+  color: var(--steel);
+}
+
+.cms-drop.is-busy {
+  opacity: 0.6;
+  pointer-events: none;
+}

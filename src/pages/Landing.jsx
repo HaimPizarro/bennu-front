@@ -1,4 +1,5 @@
 import Header from '../Header.jsx'
+import Footer from '../components/Footer.jsx'
 import Hero from '../sections/Hero.jsx'
 import Services from '../sections/Services.jsx'
 import About from '../sections/About.jsx'
@@ -17,6 +18,7 @@ export default function Landing() {
         <Results />
         <Contact />
       </main>
+      <Footer />
     </>
   )
 }

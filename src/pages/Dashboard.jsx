@@ -15,6 +15,7 @@ import EventosTab from '../components/dashboard/EventosTab.jsx'
 import NotificacionesTab from '../components/dashboard/NotificacionesTab.jsx'
 import GoogleCalendarTab from '../components/dashboard/GoogleCalendarTab.jsx'
 import AparienciaTab from '../components/dashboard/AparienciaTab.jsx'
+import ContenidoTab from '../components/dashboard/ContenidoTab.jsx'
 import ErrorBoundary from '../components/ErrorBoundary.jsx'
 import '../styles/agenda.css'
 import '../styles/dashboard.css'
@@ -131,6 +132,7 @@ export default function Dashboard() {
       {data.tab === 'notificaciones' && <NotificacionesTab />}
       {data.tab === 'google' && <GoogleCalendarTab />}
       {data.tab === 'apariencia' && <AparienciaTab />}
+      {data.tab === 'contenido' && <ContenidoTab />}
       </ErrorBoundary>
     </DashboardLayout>
   )

@@ -4,6 +4,7 @@ import { listServices } from '../lib/api.js'
 import { CATEGORIES, categoryName } from '../lib/data.js'
 import ServicePrice from '../components/ServicePrice.jsx'
 import Reveal from '../components/Reveal.jsx'
+import { useSiteContent } from '../context/siteContent.js'
 
 const TABS = [{ id: 'todos', name: 'Todos' }, ...CATEGORIES]
 const SERVICES_PER_PAGE = 6
@@ -13,6 +14,8 @@ export default function Services() {
   const [category, setCategory] = useState('todos')
   const [loading, setLoading] = useState(true)
   const [visibleCount, setVisibleCount] = useState(SERVICES_PER_PAGE)
+  const { contenido } = useSiteContent()
+  const seccion = contenido.servicios || {}
 
   useEffect(() => {
     let alive = true
@@ -47,11 +50,9 @@ export default function Services() {
     <section id="servicios" className="section section--alt">
       <div className="container">
         <Reveal>
-          <p className="eyebrow">Servicios</p>
-          <h2 className="section__title">Tratamientos con precisión</h2>
-          <p className="section__lead">
-            Tres líneas de cuidado para cada necesidad. Elige una categoría para filtrar.
-          </p>
+          <p className="eyebrow">{seccion.eyebrow}</p>
+          <h2 className="section__title">{seccion.titulo}</h2>
+          <p className="section__lead">{seccion.lead}</p>
         </Reveal>
 
         <Reveal delay={120}>

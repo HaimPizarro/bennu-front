@@ -1,55 +1,62 @@
 import Reveal from '../components/Reveal.jsx'
-
-const RESULTS = [
-  {
-    client: 'Florencia D.',
-    treatment: 'Limpieza facial profunda',
-    metric: 'Piel visiblemente más luminosa',
-    detail: 'Eliminó impurezas acumuladas y recuperó el brillo natural en una sola sesión.',
-  },
-  {
-    client: 'María S.',
-    treatment: 'Micropunción facial',
-    metric: 'Firmeza y textura renovadas',
-    detail: 'Serie de tres sesiones para atenuar marcas y redefinir el óvalo facial.',
-  },
-  {
-    client: 'Lucía P.',
-    treatment: 'Tratamiento anti-acné',
-    metric: 'Control de brotes en 6 semanas',
-    detail: 'Protocolo mensual que redujo la inflamación y reguló el exceso de sebo.',
-  },
-  {
-    client: 'Andrea V.',
-    treatment: 'Hidratación hialurónica',
-    metric: 'Hidratación profunda sostenida',
-    detail: 'Recuperó elasticidad y suavidad tras una rutina muy deshidratante.',
-  },
-]
+import MediaSlider from '../components/MediaSlider.jsx'
+import { useSiteContent } from '../context/siteContent.js'
 
 export default function Results() {
+  const { contenido } = useSiteContent()
+  const resultados = contenido.resultados || {}
+  const modo = resultados.modo || 'texto'
+  const items = Array.isArray(resultados.items) ? resultados.items : []
+
+  const withImages = items.filter((r) => r.imagen?.url)
+  const slides = withImages.map((r) => ({
+    url: r.imagen.url,
+    alt: r.imagen.alt || `${r.cliente} — ${r.tratamiento}`,
+    caption: `${r.cliente} · ${r.tratamiento}`,
+  }))
+  const showCards = modo !== 'imagenes' && items.some((r) => r.metrica || r.detalle)
+  const showGallery = modo !== 'texto' && slides.length > 0
+
   return (
     <section id="resultados" className="section section--alt">
       <div className="container">
         <Reveal>
-          <p className="eyebrow">Resultados</p>
-          <h2 className="section__title">Lo que cuentan nuestras clientas</h2>
-          <p className="section__lead">
-            Resultados medibles, piel a piel. Esto es lo que eligen quienes ya pasaron por Bennu.
-          </p>
+          <p className="eyebrow">{resultados.eyebrow}</p>
+          <h2 className="section__title">{resultados.titulo}</h2>
+          {resultados.lead && <p className="section__lead">{resultados.lead}</p>}
         </Reveal>
-        <Reveal delay={150} as="ul" className="results">
-          {RESULTS.map((r, i) => (
-            <Reveal as="li" key={r.client} className="result" delay={200 + i * 90}>
-              <p className="result__metric">{r.metric}</p>
-              <p className="result__detail">{r.detail}</p>
-              <div className="result__foot">
-                <span className="result__client">{r.client}</span>
-                <span className="result__treatment">{r.treatment}</span>
-              </div>
-            </Reveal>
-          ))}
-        </Reveal>
+
+        {showGallery && (
+          <Reveal delay={120}>
+            <MediaSlider
+              slides={slides}
+              aspect="wide"
+              autoplay={5000}
+              caption
+              className="results-slider"
+            />
+          </Reveal>
+        )}
+
+        {showCards && (
+          <Reveal delay={showGallery ? 180 : 120} as="ul" className="results">
+            {items.map((r, i) => (
+              <Reveal as="li" key={r.cliente || i} className="result" delay={200 + i * 90}>
+                {r.imagen?.url && modo === 'ambos' && (
+                  <img className="result__img" src={r.imagen.url} alt={r.imagen.alt || ''} loading="lazy" />
+                )}
+                {r.metrica && <p className="result__metric">{r.metrica}</p>}
+                {r.detalle && <p className="result__detail">{r.detalle}</p>}
+                {(r.cliente || r.tratamiento) && (
+                  <div className="result__foot">
+                    <span className="result__client">{r.cliente}</span>
+                    <span className="result__treatment">{r.tratamiento}</span>
+                  </div>
+                )}
+              </Reveal>
+            ))}
+          </Reveal>
+        )}
       </div>
     </section>
   )

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import AuthSplit from '../components/AuthSplit.jsx'
-import { login, loginWithGoogle, getSession } from '../lib/api.js'
+import { login, loginWithGoogle, getSession, sendPasswordReset } from '../lib/api.js'
 import '../styles/auth.css'
 
 export default function Login() {
@@ -10,6 +10,11 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [recoverOpen, setRecoverOpen] = useState(false)
+  const [recoverEmail, setRecoverEmail] = useState('')
+  const [recoverSent, setRecoverSent] = useState(false)
+  const [recoverError, setRecoverError] = useState('')
+  const [recoverSending, setRecoverSending] = useState(false)
 
   useEffect(() => {
     getSession().then((s) => {
@@ -39,6 +44,27 @@ export default function Login() {
     }
   }
 
+  const openRecover = () => {
+    setRecoverEmail(email)
+    setRecoverSent(false)
+    setRecoverError('')
+    setRecoverOpen(true)
+  }
+
+  const handleRecover = async (e) => {
+    e.preventDefault()
+    setRecoverError('')
+    setRecoverSending(true)
+    try {
+      await sendPasswordReset(recoverEmail)
+      setRecoverSent(true)
+    } catch (err) {
+      setRecoverError(err.message)
+    } finally {
+      setRecoverSending(false)
+    }
+  }
+
   return (
     <AuthSplit>
       <span className="auth-logo">bennu</span>
@@ -47,29 +73,31 @@ export default function Login() {
         ← Volver al inicio
       </Link>
 
-      <h1 className="auth-title">Welcome back!</h1>
+      <h1 className="auth-title">Hola de nuevo</h1>
       <p className="auth-sub">Ingresa a tu cuenta para gestionar tu panel.</p>
 
       <form className="form auth-form" onSubmit={submit}>
         <label className="field">
-          <span className="field__label">Email Address</span>
+          <span className="field__label">Email</span>
           <input
             className="field__input"
             type="email"
-            placeholder="e.g nobeijoan@******.com"
+            placeholder="tucorreo@ejemplo.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
             required
           />
         </label>
         <label className="field">
-          <span className="field__label">Password</span>
+          <span className="field__label">Contraseña</span>
           <input
             className="field__input"
             type="password"
             placeholder="••••••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
             required
           />
         </label>
@@ -77,14 +105,10 @@ export default function Login() {
         <div className="auth-row">
           <label className="auth-check">
             <input type="checkbox" />
-            <span>Remember me</span>
+            <span>Recordarme</span>
           </label>
-          <button
-            type="button"
-            className="auth-link"
-            onClick={() => setError('La recuperación de cuenta se conectará próximamente.')}
-          >
-            Forgot password?
+          <button type="button" className="auth-link" onClick={openRecover}>
+            ¿Olvidaste tu contraseña?
           </button>
         </div>
 
@@ -95,21 +119,81 @@ export default function Login() {
         )}
 
         <button className="btn btn--primary btn--block" type="submit" disabled={submitting}>
-          {submitting ? 'Ingresando…' : 'Login'}
+          {submitting ? 'Ingresando…' : 'Iniciar sesión'}
         </button>
       </form>
 
+      {recoverOpen && (
+        <div className="auth-note auth-recover">
+          {recoverSent ? (
+            <>
+              <p className="auth-note__title">Email enviado</p>
+              <p className="auth-note__body">
+                Si existe una cuenta para <strong>{recoverEmail}</strong>, te enviamos un enlace
+                para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+              </p>
+              <button
+                className="btn btn--ghost btn--block"
+                type="button"
+                onClick={() => setRecoverOpen(false)}
+              >
+                Volver al inicio de sesión
+              </button>
+            </>
+          ) : (
+            <form className="form" onSubmit={handleRecover}>
+              <p className="auth-note__title">Recuperar contraseña</p>
+              <p className="auth-note__body">
+                Ingresa tu email y te enviaremos un enlace para crear una nueva contraseña.
+              </p>
+              <label className="field">
+                <span className="field__label">Email</span>
+                <input
+                  className="field__input"
+                  type="email"
+                  value={recoverEmail}
+                  onChange={(e) => setRecoverEmail(e.target.value)}
+                  autoComplete="email"
+                  required
+                />
+              </label>
+              {recoverError && (
+                <p className="form__error" role="alert">
+                  {recoverError}
+                </p>
+              )}
+              <div className="auth-note__actions">
+                <button
+                  className="btn btn--primary btn--block"
+                  type="submit"
+                  disabled={recoverSending}
+                >
+                  {recoverSending ? 'Enviando…' : 'Enviar enlace de recuperación'}
+                </button>
+                <button
+                  className="btn btn--ghost btn--block"
+                  type="button"
+                  onClick={() => setRecoverOpen(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
+
       <p className="auth-switch">
-        Don&apos;t have an account? <span className="auth-link">Sign Up</span>
+        ¿No tienes cuenta? <Link className="auth-link" to="/registro">Regístrate</Link>
       </p>
 
       <div className="auth-divider">
-        <span>Or</span>
+        <span>O</span>
       </div>
 
       <button type="button" className="auth-google" onClick={handleGoogle}>
         <GoogleIcon />
-        Sign in with Google
+        Ingresar con Google
       </button>
     </AuthSplit>
   )

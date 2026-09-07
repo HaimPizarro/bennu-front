@@ -574,6 +574,73 @@ export const loginWithGoogle = async () => {
   if (error) throw new Error(error.message || 'Error al iniciar sesión con Google')
 }
 
+// Mensajes de error de registro en español neutro. El proveedor ya exige
+// confirmación de email: signUp suele devolver user sin session.
+const signUpErrorMessage = (message = '') => {
+  const msg = String(message).toLowerCase()
+  if (msg.includes('already registered') || msg.includes('email_exists')) {
+    return 'Ya existe una cuenta con este email. Intenta iniciar sesión.'
+  }
+  if (msg.includes('password should be at least')) {
+    return 'La contraseña debe tener al menos 6 caracteres.'
+  }
+  if (msg.includes('invalid email')) {
+    return 'Ingresa un email válido.'
+  }
+  if (msg.includes('rate limit') || msg.includes('too many')) {
+    return 'Demasiados intentos. Espera unos minutos y vuelve a intentarlo.'
+  }
+  return 'No se pudo crear la cuenta. Revisa los datos e intenta nuevamente.'
+}
+
+export const signUp = async ({ name, email, password }) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: name },
+    },
+  })
+  if (error) throw new Error(signUpErrorMessage(error.message))
+  const user = data.user || null
+  // Cuando el email ya está registrado, Supabase responde "éxito" pero sin
+  // identidades (evita revelar la existencia). Esto permite detectarlo.
+  const existing = Boolean(
+    user && Array.isArray(user.identities) && user.identities.length === 0
+  )
+  return { user, session: data.session || null, existing }
+}
+
+// Consulta al backend si un email ya tiene cuenta y con qué proveedor fue
+// creada (google vs email/contraseña). Requiere SUPABASE_SERVICE_ROLE_KEY en el
+// backend; si no está configurada devuelve null y se usa el aviso genérico.
+export const accountStatus = async (email) => {
+  try {
+    const res = await fetch(apiUrl('/api/auth/account-status'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.success ? json.data : null
+  } catch {
+    return null
+  }
+}
+
+export const sendPasswordReset = async (email) => {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/recuperar`,
+  })
+  if (error) {
+    if (String(error.message).toLowerCase().includes('rate limit')) {
+      throw new Error('Demasiados intentos. Espera unos minutos y vuelve a intentarlo.')
+    }
+    throw new Error('No se pudo enviar el enlace de recuperación. Intenta nuevamente.')
+  }
+}
+
 export const logout = async () => {
   await supabase.auth.signOut()
   write(SESSION_KEY, null)
@@ -1063,6 +1130,52 @@ export const saveSucursal = async (sucursal) => {
 
 export const deleteSucursal = async (id) => {
   await mutateBackend('DELETE', `/api/sucursales/${id}`, null)
+}
+
+// Contenido del sitio (landing: textos, imágenes y SEO). El backend fusiona el
+// documento con sus defaults, así que GET siempre devuelve la forma completa.
+const STORAGE_BASE = `${(import.meta.env.VITE_SUPABASE_URL || '').trim().replace(/\/+$/, '')}/storage/v1/object/public`
+export const CONTENIDO_BUCKET = 'bennu-media'
+
+export const contenidoImageUrl = (path) =>
+  path ? `${STORAGE_BASE}/${CONTENIDO_BUCKET}/${String(path).replace(/^\/+/, '')}` : ''
+
+const sanitizeName = (name) =>
+  String(name || 'imagen')
+    .replace(/[^a-zA-Z0-9._-]/g, '-')
+    .toLowerCase()
+    .slice(0, 80)
+
+// Sube una imagen al bucket público desde el navegador (requiere sesión admin).
+export const uploadContenidoImage = async (file) => {
+  const path = `landing/${Date.now()}-${sanitizeName(file?.name)}`
+  const { data, error } = await supabase.storage
+    .from(CONTENIDO_BUCKET)
+    .upload(path, file, { cacheControl: '31536000', upsert: false })
+  if (error) throw new Error(error.message || 'No se pudo subir la imagen')
+  return { path: data.path, url: contenidoImageUrl(data.path) }
+}
+
+export const deleteContenidoImage = async (path) => {
+  if (!path) return
+  const { error } = await supabase.storage.from(CONTENIDO_BUCKET).remove([path])
+  if (error) throw new Error(error.message || 'No se pudo eliminar la imagen')
+}
+
+export const getContenido = async () => {
+  try {
+    const res = await fetch(apiUrl('/api/contenido'))
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.success ? json.data : null
+  } catch {
+    return null
+  }
+}
+
+export const saveContenido = async (contenido) => {
+  const saved = await mutateBackend('PUT', '/api/contenido', { contenido })
+  return saved
 }
 
 // theme (apariencia)
